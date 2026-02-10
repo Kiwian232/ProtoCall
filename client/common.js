@@ -20,3 +20,7 @@ function getCookie(cookie) {
   }
   return null;
 }
+
+function colorMsg(message, color = "white") {
+	return `<span style="color: ${color};">${message}</span>`;
+}

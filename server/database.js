@@ -4,7 +4,7 @@ const db = new Database("data/app.db");
 
 db.prepare(`
   CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     content TEXT,
 	author TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP

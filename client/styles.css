@@ -1,7 +1,60 @@
-h1 {
-	font-family: "Rockwell"
+html, body {
+	background-color: #262626;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: "Rockwell";
+	display: flex;
+	flex-direction: column;
 }
 
-p, a, input, pre, button {
-	font-family: "Rockwell"
+h1 {
+	color: white;
+}
+
+p, pre {
+	color: white;
+}
+
+p, pre, button, input, a {
+	font-family: "Rockwell";
+}
+
+footer {
+	padding: 10px;
+}
+
+#heading {
+	padding: 10px;
+	z-index: 1000;
+}
+
+#chat {
+	position: fixed;
+	bottom: 10px;
+	max-height: 80%;
+	display: flex;
+	right: 10px;
+	left: 10px;
+	box-sizing: border-box;
+	flex-direction: column;
+}
+
+#log {
+	flex: 1;
+	overflow-y: auto;
+	background-color: black;
+	color: white;
+	padding: 10px;
+	margin-bottom: 5px;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#log::-webkit-scrollbar {
+    display: none;
 }

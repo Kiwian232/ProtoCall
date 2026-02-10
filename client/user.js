@@ -25,9 +25,10 @@ socket.on("user_idreturn", (userID) => {
 function register() {
 	var username = document.getElementById("username").value;
 	var email = document.getElementById("email").value;
+	var color = "white";
 	var password = document.getElementById("password").value;
 	console.log(username, email, password)
-	socket.emit("user_register", username, "black", email, password);
+	socket.emit("user_register", username, color, email, password);
 }
 
 function login() {

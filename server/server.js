@@ -22,14 +22,33 @@ io.on("connection", (socket) => {
 		userName = userRow.username;
 		userColor = userRow.color;
 	} else {
-		socket.emit("message_server", "You cannot send messages because your login is not valid! (you are likely logged out)");
+		socket.emit("message_server", colorMsg("You cannot send messages because your login is not valid! (you are likely logged out)", "lightblue"));
 		console.warn("WARN: Invalid message from userID: " + userID + " with content: \"" + message + "\"!");
 		return;
 	}
 
     var messageRow = db.prepare("INSERT INTO messages (content, author) VALUES (?, ?)").run(message, userID);
 
-    io.emit("message_server", `<span style=\"color: ${userColor};">` + userName + "</span>:" + message, messageRow.lastInsertRowid);
+    io.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(message), messageRow.lastInsertRowid);
+  });
+
+  socket.on("message_request", (messageID) => {
+	const messageRow = db.prepare("SELECT content, author FROM messages WHERE id = ?").get(messageID);
+	if (!messageRow) {
+		socket.emit("message_server", colorMsg("Could not load requested message!"), -1);
+	} else {
+		const userRow = db.prepare("SELECT username, color FROM users WHERE userid = ?").get(messageRow.author);
+		var userName = "[DeletedUser]";
+		var userColor = "white";
+		if (userRow) {
+			userName = userRow.username;
+			userColor = userRow.color;
+		}
+		socket.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(messageRow.content), messageID);
+		if (messageID == 1) {
+			socket.emit("message_server", colorMsg("You have reached the end of chat history!", "lightblue"), 0);
+		}
+	}
   });
 
   socket.on("ping_forward", (author) => {
@@ -45,9 +64,9 @@ io.on("connection", (socket) => {
   socket.on("user_register", (name, color, email, password) => {
 	console.log("Packet user_register, Name: \"" + name + "\", Color: \"" + color + "\", Email: \"" + email + "\", Password: \"" + password + "\"");
 
-	const emailTaken = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+	const emailTaken = db.prepare("SELECT * FROM users WHERE email = ? OR username = ?").get(email, name);
 	if (emailTaken) {
-		socket.emit("alert_server", "This email is already registered!");
+		socket.emit("alert_server", "This email or username is already registered!");
 		return;
 	}
 
@@ -82,4 +101,8 @@ function generateUserID(length = 8) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+function colorMsg(message, color = "white") {
+	return `<span style="color: ${color};">${message}</span>`;
 }

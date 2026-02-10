@@ -6,17 +6,17 @@
 		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
-		<h1>ProtoCall Chatting</h1>
-		<p id="debug"></p>
- 		<input id="msg" placeholder="Message"/>
-  		<button onclick="send()">Send</button>
-
-  		<pre id="log"></pre>
-
-		<footer>
+		<div id="heading">
+			<h1>ProtoCall Chatting</h1>
+			<p id="debug"></p>
 			<a href="register.html">Register</a>
 			<a href="login.html">Login</a>
-		</footer>
+		</div>
+
+		<div id="chat">
+  			<pre id="log"></pre>
+			<input id="msg" placeholder="Message"/>
+		</div>
 
   		<script src="/socket.io/socket.io.js"></script>
 		<script src="common.js"></script>
