@@ -29,7 +29,11 @@ io.on("connection", (socket) => {
 
     var messageRow = db.prepare("INSERT INTO messages (content, author) VALUES (?, ?)").run(message, userID);
 
-    io.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(message), messageRow.lastInsertRowid);
+	if (userName == "[SERVER]") {
+		io.emit("alert_server", message);
+	} else {
+    	io.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(escapeHTML(message)), messageRow.lastInsertRowid);
+	}
   });
 
   socket.on("message_request", (messageID) => {
@@ -44,7 +48,7 @@ io.on("connection", (socket) => {
 			userName = userRow.username;
 			userColor = userRow.color;
 		}
-		socket.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(messageRow.content), messageID);
+		socket.emit("message_server", colorMsg(userName + ": ", "#" + userColor) + colorMsg(escapeHTML(messageRow.content)), messageID);
 		if (messageID == 1) {
 			socket.emit("message_server", colorMsg("You have reached the end of chat history!", "lightblue"), 0);
 		}
@@ -68,6 +72,11 @@ io.on("connection", (socket) => {
 	if (emailTaken) {
 		socket.emit("alert_server", "This email or username is already registered!");
 		return;
+	}
+
+	const regex = /^[A-Za-z0-9_-]+$/;
+	if (!regex.test(name)) {
+		socket.emit("alert_server", "Your username can only contain A-z, 0-9, hyphens, and underscores! This is done for security purposes currently but may be changed.");
 	}
 
 	db.prepare(
@@ -105,4 +114,13 @@ function generateUserID(length = 8) {
 
 function colorMsg(message, color = "white") {
 	return `<span style="color: ${color};">${message}</span>`;
+}
+
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
