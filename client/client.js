@@ -3,6 +3,7 @@ var connected = false;
 var lostConnection = false;
 
 var earliestMessageIndex = -1;
+var expectedOldestMessage = -1;
 
 document.getElementById("msg").addEventListener("keydown", function(event) {
 	if (event.key === "Enter") {
@@ -12,12 +13,16 @@ document.getElementById("msg").addEventListener("keydown", function(event) {
 });
 
 document.getElementById("log").addEventListener("wheel", function(event) {
+	if (expectedOldestMessage != -1) {
+		return;
+	}
 	if (document.getElementById("log").scrollTop == 0 && event.deltaY < 0) {
 		var loadAmt = 10;
 		for (var i = 1; i < 1 + loadAmt; i++) {
 			if (earliestMessageIndex - i < 1) {
 				break;
 			}
+			expectedOldestMessage = earliestMessageIndex - i;
 			socket.emit("message_request", earliestMessageIndex - i);
 		}
 	}
@@ -48,6 +53,9 @@ socket.on("disconnecct", () => {
 socket.on("message_server", (data, messageIndex) => {
 	//console.log("Recieved server message: \"" + data + "\"");
 	//console.log(messageIndex)
+	if (messageIndex == expectedOldestMessage) {
+		expectedOldestMessage = -1;
+	}
 	if (messageIndex < earliestMessageIndex) {
 		log(data, true);
 	} else {
