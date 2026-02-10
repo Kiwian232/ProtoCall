@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
+		<title>ProtoCall Chatting</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<h1>ProtoCall Chatting</h1>
+		<p id="debug"></p>
+ 		<input id="msg" placeholder="Message"/>
+  		<button onclick="send()">Send</button>
+
+  		<pre id="log"></pre>
+
+		<footer>
+			<a href="register.html">Register</a>
+			<a href="login.html">Login</a>
+		</footer>
+
+  		<script src="/socket.io/socket.io.js"></script>
+		<script src="common.js"></script>
+  		<script src="client.js"></script>
+	</body>
+</html>
