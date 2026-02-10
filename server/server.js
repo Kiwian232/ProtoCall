@@ -86,11 +86,12 @@ io.on("connection", (socket) => {
 	const regex = /^[A-Za-z0-9_-]+$/;
 	if (!regex.test(name)) {
 		socket.emit("alert_server", "Your username can only contain A-z, 0-9, hyphens, and underscores! This is done for security purposes currently but may be changed.");
+		return;
 	}
 
 	db.prepare(
       "INSERT INTO users (userid, username, color, email, password) VALUES (?, ?, ?, ?, ?)"
-    ).run(generateUserID(), name, color, email, password);
+    ).run(generateUserID(), name, color, email.toLowerCase(), password);
   });
 
   socket.on("user_idrequest", (email, password) => {
