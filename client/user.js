@@ -10,6 +10,10 @@ setInterval(function() {
 	}
 }, 100);
 
+setInterval(function() {
+	document.getElementById("colorlabel").style.color = document.getElementById("color").value;
+}, 10);
+
 socket.on("connect", () => {
 	console.log("Connected!");
 	timeoutDuration = 0;
@@ -25,7 +29,7 @@ socket.on("user_idreturn", (userID) => {
 function register() {
 	var username = document.getElementById("username").value;
 	var email = document.getElementById("email").value;
-	var color = "white";
+	var color = document.getElementById("color").value.slice(1);
 	var password = document.getElementById("password").value;
 	console.log(username, email, password)
 	socket.emit("user_register", username, color, email, password);
