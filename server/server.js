@@ -56,10 +56,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("userinfo_request", (userID) => {
-	console.log("User info request for userID: " + userID);
+	//console.log("User info request for userID: " + userID);
 	const userRow = db.prepare("SELECT username, color FROM users WHERE userid = ? ").get(userID);
 	if (userRow) {
-		console.log("Request accepted");
+		//console.log("Request accepted");
 		socket.emit("userinfo_response", userRow.username, userRow.color);
 	}
   });
