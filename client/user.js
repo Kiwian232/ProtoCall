@@ -18,6 +18,8 @@ socket.on("connect", () => {
 	console.log("Connected!");
 	timeoutDuration = 0;
 	timingOut = false;
+
+	socket.emit("userinfo_request", getCookie("userid"));
 });
 
 socket.on("user_idreturn", (userID) => {

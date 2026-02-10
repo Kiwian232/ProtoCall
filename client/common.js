@@ -4,6 +4,11 @@ socket.on("alert_server", (alertMessage) => {
 	alert(alertMessage);
 });
 
+socket.on("userinfo_response", (username, color) => {
+	document.getElementById("userInfo").style.color = "#" + color;
+	document.getElementById("userInfo").innerHTML = "Logged in as: " + username;
+});
+
 function setCookie(cookie, key) {
   const expiry = new Date();
   expiry.setDate(expiry.getDate() + 365);

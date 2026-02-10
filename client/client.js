@@ -44,6 +44,7 @@ setInterval(function() {
 
 socket.on("connect", () => {
 	setConnected();
+	socket.emit("userinfo_request", getCookie("userid"));
 });
 
 socket.on("disconnecct", () => {
