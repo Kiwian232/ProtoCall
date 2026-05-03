@@ -1,6 +1,6 @@
-const socket = io();
+const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7164/protocall").withAutomaticReconnect().build();
 
-socket.on("alert_server", (alertMessage) => {
+connection.on("alert_server", (alertMessage) => {
 	alert(alertMessage);
 });
 

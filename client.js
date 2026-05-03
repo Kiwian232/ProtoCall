@@ -1,6 +1,5 @@
-var pingTime = 5000;
-var connected = false;
 var lostConnection = false;
+var connected = false;
 
 var earliestMessageIndex = -1;
 var expectedOldestMessage = -1;
@@ -13,54 +12,48 @@ document.getElementById("msg").addEventListener("keydown", function(event) {
 });
 
 document.getElementById("log").addEventListener("wheel", function(event) {
-	if (expectedOldestMessage != -1) {
-		return;
-	}
 	if (document.getElementById("log").scrollTop == 0 && event.deltaY < 0) {
-		var loadAmt = 10;
-		for (var i = 1; i < 1 + loadAmt; i++) {
-			if (earliestMessageIndex - i < 1) {
-				break;
-			}
-			expectedOldestMessage = earliestMessageIndex - i;
-			socket.emit("message_request", earliestMessageIndex - i);
-		}
-	}
+    	if (earliestMessageIndex > 1) {
+            connection.invoke("push_messageRequest", earliestMessageIndex, 20);
+        }
+    }
 });
 
-setInterval(function() {
-	pingTime -= 100;
-	if (pingTime < 2500) {
-		pingServer();
-	}
-	if (pingTime === 0) {
-		console.log("Server has not returned ping in 5000ms!");
-		log(colorMsg("You have lost connection to the server; it may have gone offline or crashed.", "lightblue"));
-		connected = false;
-		lostConnection = true;
-	}
-	document.getElementById("debug").innerHTML = "PingTime: " + (pingTime / 100) + ", EarliestMessageIndex: " + earliestMessageIndex;
-}, 100);
+async function start() {
+    try {
+        await connection.start();
+		await connection.invoke("push_messageRequest", -1, 50);
+        console.log("Connected to server");
+		timeoutDuration = 0;
+		timingOut = false;
+		
+		setConnected();
+    } catch (error) {
+        console.log("Error connecting: " + error);
+    }
+}
 
-socket.on("connect", () => {
-	setConnected();
-	socket.emit("userinfo_request", getCookie("userid"));
-});
+start();
 
-socket.on("disconnecct", () => {
+connection.onclose(error => {
 	log(colorMsg("You have disconnected from the server!", "lightblue"));
-})
+	lostConnection = true;
+});
 
-socket.on("message_server", (data, messageIndex) => {
-	//console.log("Recieved server message: \"" + data + "\"");
-	//console.log(messageIndex)
+connection.onreconnected(connectionID => {
+	setConnected();
+});
+
+connection.on("push_recieveMessage", (userID, message, messageIndex) => {
+	console.log("Recieved server message: \"" + message + "\"");
+	console.log(messageIndex)
 	if (messageIndex == expectedOldestMessage) {
 		expectedOldestMessage = -1;
 	}
 	if (messageIndex < earliestMessageIndex) {
-		log(data, true);
+		log(message, true);
 	} else {
-		log(data);
+		log(message);
 	}
 
 	if (messageIndex < earliestMessageIndex || earliestMessageIndex == -1) {
@@ -68,33 +61,21 @@ socket.on("message_server", (data, messageIndex) => {
 	}
 });
 
-socket.on("ping_back", () => {
-	pingTime = 5000;
-	if (!connected) {
-		setConnected();
-	}
-});
-
-function send() {
+async function send() {
 	const input = document.getElementById("msg");
 	if (input.value == "") {
 		return;
 	}
 	if (connected) {
-		socket.emit("message_client", input.value, getUserID());
+		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value);
 		input.value = "";
 	} else {
 		log(colorMsg("You cannot send messages while not connected!", "lightblue"));
 	}
 }
 
-function pingServer() {
-	socket.emit("ping_forward", getUserID());
-	console.log("pinged!");
-}
-
 function setConnected() {
-	if (lostConnection) {
+	if (connected) {
 		log(colorMsg("You have successfully reconnected to the server!", "lightblue"));
 		lostConnection = false;
 	} else {
@@ -117,8 +98,4 @@ function log(text, back = false) {
 		log.innerHTML += text + "\n";
 		log.scrollTop = log.scrollHeight;
 	}
-}
-
-function getUserID() {
-	return getCookie("userid");
 }

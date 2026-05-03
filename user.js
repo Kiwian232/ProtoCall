@@ -1,51 +1,64 @@
-var timeoutDuration = 0;
-var timingOut = false;
-
-setInterval(function() {
-	if (timingOut) {
-		timeoutDuration -= 100;
-		if (timeoutDuration == 0) {
-			alert("You disconnected from the server! Please try reloading the page. If you still do not connect, the server may be down.");
-		}
-	}
-}, 100);
-
-setInterval(function() {
-	document.getElementById("colorlabel").style.color = document.getElementById("color").value;
-}, 10);
-
-socket.on("connect", () => {
-	console.log("Connected!");
-	timeoutDuration = 0;
-	timingOut = false;
-
-	socket.emit("userinfo_request", getCookie("userid"));
-});
-
-function register() {
-	var username = document.getElementById("username").value;
-	var email = document.getElementById("email").value;
-	var color = document.getElementById("color").value.slice(1);
-	var password = document.getElementById("password").value;
-	console.log(username, email, password)
-	//socket.emit("user_register", username, color, email, password);
+var colorLabel = document.getElementById("colorlabel");
+var colorPicker = document.getElementById("color");
+if (colorLabel != null) {
+	setInterval(function() {
+		colorLabel.style.color = colorPicker.value;
+	}, 10);
 }
 
-function login() {
-	var email = document.getElementById("email").value;
+
+async function start() {
+    try {
+        await connection.start();
+        console.log("Connected to server");
+		timeoutDuration = 0;
+		timingOut = false;
+    } catch (error) {
+        console.log("Error connecting: " + error);
+    }
+}
+
+start();
+
+async function register() {
+	var username = document.getElementById("username").value;
+	var color = document.getElementById("color").value.slice(1);
 	var password = document.getElementById("password").value;
-	var secret = getUserSecret(email, password);
-	console.log("UserID returned: " + secret);
-	if (secret = "-1") {
-		alert("Login failed");
+
+	var loginInfo = await fetch("https://api.kiwiandoesthings.place/request_registerAccount?username=" + username + "&password=" + password + "&color=" + color);
+	var json = await loginInfo.json();
+	var userID = json.userID;
+	var userSecret = json.userSecret;
+	console.log(loginInfo);
+	if (json  == "-1") {
+		alert("Account is either already registered or provided registration info is invalid");
 		return;
 	}
-	setCookie("userid", secret);
+	console.log("UserID returned: " + userID);
+	console.log("UserSecret returned: " + userSecret);
+	setLoginInfo(userID, userSecret);
 	window.location.replace('/index.html');
 }
 
-function getUserSecret(email, password) {
-	return await fetch("https://api.kiwiandoesthings.place/request")
+async function login() {
+	var username = document.getElementById("username").value;
+	var password = document.getElementById("password").value;
 
-	return socket.emit("user_idrequest", email, password);
+	var loginInfo = await fetch("https://api.kiwiandoesthings.place/request_loginInfo?username=" + username + "&password=" + password);
+	var json = await loginInfo.json();
+	var userID = json.userID;
+	var userSecret = json.userSecret;
+	if (json == "-1") {
+		alert("Login is invalid");
+		return;
+	}
+	console.log("UserID returned: " + userID);
+	console.log("UserSecret returned: " + userSecret);
+	setLoginInfo(userID, userSecret);
+	window.location.replace('/index.html');
+}
+
+function setLoginInfo(userID, userSecret) {
+	setCookie("userid", userID);
+	setCookie("usersecret", userSecret);
 }
