@@ -51,7 +51,7 @@ a:active {
 .small-form {
 	background-color:rgb(110, 110, 110);
 	text-align: center;
-	margin: 0 auto 0 auto;
+	margin: 0 auto 20px auto;
 	width: 40vw;
 	padding: 30px 20px 30px 20px;
 }

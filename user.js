@@ -43,11 +43,12 @@ async function register() {
 	var color = colorPicker.value.slice(1);
 	var passwordValue = password.value;
 
-	var loginInfo = await fetch("https://api.kiwiandoesthings.place/request_registerAccount?username=" + usernameValue + "&password=" + passwordValue + "&color=" + color);
+	var thisInfo = await fetch("https://api.kiwiandoesthings.place/request_deviceInfo");
+	var thisJson = await thisInfo.json();
+	var loginInfo = await fetch("https://api.kiwiandoesthings.place/request_registerAccount?username=" + usernameValue + "&password=" + passwordValue + "&color=" + color + "&info=" + thisJson.id);
 	var json = await loginInfo.json();
 	var userID = json.userID;
 	var userSecret = json.userSecret;
-	console.log(loginInfo);
 	if (json  == "-1") {
 		alert("Account is either already registered or provided registration info is invalid");
 		return;

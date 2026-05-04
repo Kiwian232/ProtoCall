@@ -78,16 +78,19 @@ async function connectToRoom() {
 	if (getCookie("knownrooms").indexOf(roomName) == -1) {
 		addRoomToList(roomName, currentRoomID);
 	}
+	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "red") + "\"");
 }
 
 async function connectToRoomID(roomName, roomID) {
+	clearLog();
 	currentRoomID = roomID;
 	document.getElementById("room-name").innerHTML = roomName;
 	await connection.invoke("push_messageRequest", -1, 50, parseInt(currentRoomID));
+	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "red") + "\"");
 }
 
 connection.onclose(error => {
-	systemLog(colorMsg("You have disconnected from the server!", "lightblue"));
+	systemLog("You have disconnected from the server!");
 	lostConnection = true;
 });
 
@@ -153,25 +156,25 @@ async function send() {
 		input.value = "";
 	} else {
 		if (currentRoomID != -1) {
-			systemLog(colorMsg("You cannot send messages while not connected!", "lightblue"));
+			systemLog("You cannot send messages while not connected!");
 		} else {
-			systemLog(colorMsg("You cannot send messages while not in a room!", "lightblue"));
+			systemLog("You cannot send messages while not in a room!");
 		}
 	}
 }
 
 function setConnected() {
 	if (connected) {
-		systemLog(colorMsg("You have successfully reconnected to the server!", "lightblue"));
+		systemLog("You have successfully reconnected to the server!");
 		lostConnection = false;
 	} else {
-		systemLog(colorMsg("You have successfully connected to the server!", "lightblue"));
+		systemLog("You have successfully connected to the server!");
 	}
 	connected = true;
 }
 
 function systemLog(text, back = false) {
-	log(text, "System", "add8e6", back);
+	log(colorMsg(text, "lightblue"), "&lt;System", "add8e6", back);
 }
 
 function log(text, authorUsername, authorColor, back = false) {
