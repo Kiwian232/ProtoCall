@@ -51,9 +51,9 @@ document.getElementById("log").addEventListener("wheel", function(event) {
 async function start() {
     try {
         await connection.start();
-		setConnected();
         console.log("Connected to server");
 		connectToRoomID("HomeRoom", 0);
+		setConnected();
     } catch (error) {
         console.log("Error connecting: " + error);
     }
@@ -190,7 +190,6 @@ function log(text, authorUsername, authorColor, back = false) {
 		log.scrollTop = prevScrollTop + (newScrollHeight - prevScrollHeight);
 	} else {
 		log.innerHTML = messageText + log.innerHTML;
-		//log.scrollTop = log.scrollHeight;
 	}
 }
 
