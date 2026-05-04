@@ -1,4 +1,4 @@
-const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7164/protocall").withAutomaticReconnect().build();
+const connection = new signalR.HubConnectionBuilder().withUrl("https://api.kiwiandoesthings.place/protocall").withAutomaticReconnect().build();
 
 connection.on("push_serverMessage", (alertMessage) => {
 	alert(alertMessage);
