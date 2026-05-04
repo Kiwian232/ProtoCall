@@ -8,58 +8,157 @@ html, body {
 	flex-direction: column;
 }
 
-h1 {
-	color: white;
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	max-height: 100vh;
 }
 
-p, pre {
-	color: white;
-}
-
-p, pre, button, input, a {
-	font-family: "Rockwell";
+main {
+	flex: 1 0 auto;
 }
 
 footer {
+	flex-shrink: 0;
+	text-align: center;
 	padding: 10px;
 }
 
-#heading * {
-	padding: 10px;
-	padding-top: 0px;
-	z-index: 1000;
-	margin: 10px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-	padding-bottom: 0px;
+a:link {
+	text-decoration: none;
+  	color: rgb(0, 255, 255);
 }
 
-#chat {
-	position: fixed;
-	bottom: 10px;
-	max-height: 80%;
+a:visited {
+  	color: rgb(0, 179, 179);
+}
+
+a:hover {
+	text-decoration: underline;
+  	color: #008181;
+}
+
+a:active {
+  	color: rgb(138, 255, 255);
+}
+
+#page-heading {
+	text-align: center; 
+	color: white;
+}
+
+.small-form {
+	background-color:rgb(110, 110, 110);
+	text-align: center;
+	margin: 0 auto 0 auto;
+	width: 30vw;
+	padding: 30px 20px 30px 20px;
+}
+
+.small-form input {
+	width: inherit;
+	padding: 0px;
+}
+
+.small-form #submit {
+	margin-top: 30px;
+}
+
+nav {
 	display: flex;
-	right: 10px;
-	left: 10px;
-	box-sizing: border-box;
+	align-items: center;
+	padding: 10px;
+	background-color: #494949;
+	position: relative;
+}
+
+#nav-right {
+	margin-left: auto;
+}
+
+#nav-right a {
+	padding-left: 15px;
+}
+
+#nav-middle {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+#chat-screen {
+	display: flex;
+	width: 100%;
+	height: fit-content;;
+}
+
+#chat-bar-left {
+	width: 10%;
+	overflow-y: auto;
+	height: 100%;
+}
+
+#chat-bar-right {
+	width: 15%;
+}
+
+#room-name {
+	font-size: 20px;
+	text-align: center;
+	font-weight: bold;
+	color: white;
+}
+
+#chat-bar-middle {
+	flex: 1;
+	overflow-y: auto;
+	height: calc(100vh - 38px);
+	display: flex;
 	flex-direction: column;
 }
 
 #log {
+	display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
 	flex: 1;
 	overflow-y: auto;
 	background-color: black;
 	color: white;
 	padding: 10px;
-	margin-bottom: 5px;
+	margin: 0px;
 	white-space: pre-wrap;
 	word-wrap: break-word;
 	overflow-wrap: anywhere;
 
-    scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
+#chat-input {
+	padding: 10px;
+	border: none;
+}
+
+#chat-input:focus {
+	outline: 0;
+	border: none;
+}
+
 #log::-webkit-scrollbar {
-    display: none;
+    width: 10px;
+}
+
+#log::-webkit-scrollbar-track {
+    background: #000000;
+    border-radius: 10px;
+}
+
+#log::-webkit-scrollbar-thumb {
+    background: #ffffff;
+    border-radius: 10px;
+}
+
+#log::-webkit-scrollbar-thumb:hover {
+    background: #909090; 
 }

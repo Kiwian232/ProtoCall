@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
-		<title>ProtoCall Chatting - Login</title>
+		<title>ProtoCall Chatting</title>
 		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
@@ -18,15 +18,12 @@
 		</nav>
 
 		<main id="page-heading">
-			<h1>Log In</h1>
-			<h2 id="userInfo"></h2>
+			<h1>Account Page</h1>
+			<h3 id="username-display">Fetching Username...</h3>
 
 			<div class="small-form">
-				<input id="username" placeholder="Enter your username"/>
-				<input id="password" placeholder="Enter your password"/>
-  				<button id="submit" onclick="login()">Login</button>
+				<button onclick="logout()">Log Out</button>
 			</div>
-			<a href="register.html">Not registered?</a>
 		</main>
 
 		<footer>
@@ -35,6 +32,6 @@
 
   		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
 		<script src="common.js"></script>
-  		<script src="user.js"></script>
+		<script src="account.js"></script>
 	</body>
 </html>

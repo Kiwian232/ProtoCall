@@ -1,10 +1,39 @@
+async function loadClient() {
+	if (getCookie("userid") == "" || getCookie("usersecret") == "") {
+		window.location = "/login.html";
+	} else {
+		var info = await getUserInfo(getCookie("userid"));
+		var username = await info.userUsername;
+		var color = await info.userColor;
+		document.getElementById("username-view").innerHTML = username;
+		document.getElementById("username-view").style.color = "#" + color;
+	}
+}
+
+loadClient();
+
 var lostConnection = false;
 var connected = false;
 
-var earliestMessageIndex = -1;
-var expectedOldestMessage = -1;
+var shouldCancelMessageClear = false;
 
-document.getElementById("msg").addEventListener("keydown", function(event) {
+var latestMessageIndex = -1;
+var earliestMessageIndex = -1;
+
+var userInfos = {};
+
+var currentRoomID = -1;
+
+var knownRooms = getCookie("knownrooms").split(".");
+for (var room in knownRooms) {
+	if (room == 0) {
+		continue;
+	}
+	var parts = knownRooms[room].split(",");
+	addVisualRoom(parts[0], parts[1]);
+}
+
+document.getElementById("chat-input").addEventListener("keydown", function(event) {
 	if (event.key === "Enter") {
 		send();
 		event.preventDefault();
@@ -12,9 +41,9 @@ document.getElementById("msg").addEventListener("keydown", function(event) {
 });
 
 document.getElementById("log").addEventListener("wheel", function(event) {
-	if (document.getElementById("log").scrollTop == 0 && event.deltaY < 0) {
+	if (document.getElementById("log").scrollTop <= 5 && event.deltaY < 0) {
     	if (earliestMessageIndex > 1) {
-            connection.invoke("push_messageRequest", earliestMessageIndex, 20);
+            connection.invoke("push_messageRequest", earliestMessageIndex, 20, currentRoomID);
         }
     }
 });
@@ -22,12 +51,8 @@ document.getElementById("log").addEventListener("wheel", function(event) {
 async function start() {
     try {
         await connection.start();
-		await connection.invoke("push_messageRequest", -1, 50);
-        console.log("Connected to server");
-		timeoutDuration = 0;
-		timingOut = false;
-		
 		setConnected();
+        console.log("Connected to server");
     } catch (error) {
         console.log("Error connecting: " + error);
     }
@@ -35,8 +60,33 @@ async function start() {
 
 start();
 
+async function connectToRoom() {
+	var roomName = document.getElementById("room-select-input").value;
+	var roomInfo = await fetch("https://api.kiwiandoesthings.place/request_roomInfo?roomName=" + roomName);
+	var json = await roomInfo.json();
+	if (json == -1) {
+		if (confirm("That room does not exist! Create it?")) {
+			connection.invoke("push_createRoom", roomName, getCookie("userid"), getCookie("usersecret"));
+		}
+		return;
+	}
+	clearLog();
+	currentRoomID = json.roomID;
+	document.getElementById("room-name").innerHTML = json.roomName;
+	await connection.invoke("push_messageRequest", -1, 50, currentRoomID);
+	if (getCookie("knownrooms").indexOf(roomName) == -1) {
+		addRoomToList(roomName, currentRoomID);
+	}
+}
+
+async function connectToRoomID(roomName, roomID) {
+	currentRoomID = roomID;
+	document.getElementById("room-name").innerHTML = roomName;
+	await connection.invoke("push_messageRequest", -1, 50, parseInt(currentRoomID));
+}
+
 connection.onclose(error => {
-	log(colorMsg("You have disconnected from the server!", "lightblue"));
+	systemLog(colorMsg("You have disconnected from the server!", "lightblue"));
 	lostConnection = true;
 });
 
@@ -44,58 +94,122 @@ connection.onreconnected(connectionID => {
 	setConnected();
 });
 
-connection.on("push_recieveMessage", (userID, message, messageIndex) => {
-	console.log("Recieved server message: \"" + message + "\"");
-	console.log(messageIndex)
-	if (messageIndex == expectedOldestMessage) {
-		expectedOldestMessage = -1;
-	}
-	if (messageIndex < earliestMessageIndex) {
-		log(message, true);
-	} else {
-		log(message);
-	}
+connection.on("push_recieveRoom", async (roomName, roomID) => {
+	clearLog();
+	currentRoomID = roomID;
+	await connection.invoke("push_messageRequest", -1, 50, currentRoomID);
+	document.getElementById("room-name").innerHTML = roomName;
+	addRoomToList(roomName, currentRoomID);
+});
 
-	if (messageIndex < earliestMessageIndex || earliestMessageIndex == -1) {
-		earliestMessageIndex = messageIndex;
-	}
+connection.on("push_recieveMessages", async (messages) => {
+	var fetchPromises = messages.map(message => {
+        if (userInfos[message.authorID] === undefined) {
+            userInfos[message.authorID] = fetch("https://api.kiwiandoesthings.place/request_userInfo?userID=" + message.authorID).then(result => result.json()).catch(() => ({ userUsername: "Unknown", userColor: "808080" }));
+        }
+        return userInfos[message.authorID];
+    });
+	
+	await Promise.all(fetchPromises);
+
+	var isHistory = earliestMessageIndex !== -1 && messages[0].messageIndex < earliestMessageIndex;
+
+    if (isHistory) {
+        messages.reverse();
+    }
+
+	for (var message of messages) {
+        var userInfo = await userInfos[message.authorID];
+
+        if (message.messageIndex === earliestMessageIndex && isHistory) {
+			continue;
+		}
+
+        if (!isHistory) {
+            log(message.content, userInfo.userUsername, userInfo.userColor, false);
+            latestMessageIndex = Math.max(latestMessageIndex, message.messageIndex);
+            if (earliestMessageIndex === -1 || message.messageIndex < earliestMessageIndex) {
+                earliestMessageIndex = message.messageIndex;
+            }
+        } else {
+            log(message.content, userInfo.userUsername, userInfo.userColor, true);
+            earliestMessageIndex = message.messageIndex;
+        }
+    };
 });
 
 async function send() {
-	const input = document.getElementById("msg");
+	var input = document.getElementById("chat-input");
 	if (input.value == "") {
 		return;
 	}
-	if (connected) {
-		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value);
+	if (connected && currentRoomID != -1) {
+		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, currentRoomID);
+		if (shouldCancelMessageClear) {
+			shouldCancelMessageClear = false;
+			return;
+		}
 		input.value = "";
 	} else {
-		log(colorMsg("You cannot send messages while not connected!", "lightblue"));
+		if (currentRoomID != -1) {
+			systemLog(colorMsg("You cannot send messages while not connected!", "lightblue"));
+		} else {
+			systemLog(colorMsg("You cannot send messages while not in a room!", "lightblue"));
+		}
 	}
 }
 
 function setConnected() {
 	if (connected) {
-		log(colorMsg("You have successfully reconnected to the server!", "lightblue"));
+		systemLog(colorMsg("You have successfully reconnected to the server!", "lightblue"));
 		lostConnection = false;
 	} else {
-		log(colorMsg("You have successfully connected to the server!", "lightblue"));
+		systemLog(colorMsg("You have successfully connected to the server!", "lightblue"));
 	}
 	connected = true;
 }
 
-function log(text, back = false) {
-	const log = document.getElementById("log");
+function systemLog(text, back = false) {
+	log(text, "System", "add8e6", back);
+}
+
+function log(text, authorUsername, authorColor, back = false) {
+	var log = document.getElementById("log");
+	var messageText = "<span><span style=\"color: #" + authorColor + ";\">" + authorUsername + "></span> " + text + "</span>"
 	if (back) {
-		const prevScrollHeight = log.scrollHeight;
-		const prevScrollTop = log.scrollTop;
+		var prevScrollHeight = log.scrollHeight;
+		var prevScrollTop = log.scrollTop;
 
-		log.innerHTML = text + "\n" + log.innerHTML;
+		log.innerHTML = log.innerHTML + messageText;
 
-		const newScrollHeight = log.scrollHeight;
+		var newScrollHeight = log.scrollHeight;
 		log.scrollTop = prevScrollTop + (newScrollHeight - prevScrollHeight);
 	} else {
-		log.innerHTML += text + "\n";
-		log.scrollTop = log.scrollHeight;
+		log.innerHTML = messageText + log.innerHTML;
+		//log.scrollTop = log.scrollHeight;
 	}
+}
+
+function clearLog() {
+	var log = document.getElementById("log");
+	log.innerHTML = "";
+}
+
+function addRoomToList(roomName, roomID) {
+	setCookie("knownrooms", getCookie("knownrooms") + "." + roomName + "," + roomID);
+	addVisualRoom(roomName, roomID);
+}
+
+function addVisualRoom(roomName, roomID) {
+	var list = document.getElementById("known-room-list");
+	var listItem = document.createElement("li");
+	var link = document.createElement("a");
+	link.href = "javascript:void(0)";
+	link.addEventListener("click", function(event) {
+        event.preventDefault();
+        connectToRoomID(roomName, roomID);
+    });
+	link.textContent = roomName;
+	listItem.appendChild(link);
+	list.appendChild(listItem);
 }

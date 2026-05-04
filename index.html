@@ -6,21 +6,37 @@
 		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
-		<div id="heading">
-			<h1>ProtoCall Chatting</h1>
-			<h2 id="userInfo"></h2>
-			<p id="debug"></p>
-			<a href="register.html">Register</a>
-			<a href="login.html">Login</a>
-		</div>
+		<nav>
+			<div id="nav-left">
+				<a href="index.html">Home</a>
+			</div>
+			
+			<div id="nav-right">
+				<a href="chat.html">Chat</a>
+				<a href="account.html">Account</a>
+			</div>
+		</nav>
 
-		<div id="chat">
-  			<pre id="log"></pre>
-			<input id="msg" placeholder="Message"/>
-		</div>
+		<main id="page-heading">
+			<h1>ProtoCall Chatting</h1>
+			<h3>By KiwianDoesThings</h3>
+
+			<div class="small-form">
+				<p>ProtoCall chatting is a small for-fun chatting app inspired by Discord and old IRC chat. <br>Currently it supports these features:</p>
+				<ul style="text-align: left;">
+					<li>Accounts</li>
+					<li>Different message boards (rooms)</li>
+					<li>Persistent messages</li>
+					<li>Server-side authentication and security</li>
+				</ul>
+			</div>
+		</main>
+
+		<footer>
+			<a href="https://kiwiandoesthings.place">My Website</a>
+		</footer>
 
   		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
 		<script src="common.js"></script>
-  		<script src="client.js"></script>
 	</body>
 </html>

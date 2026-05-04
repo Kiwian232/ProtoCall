@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
+		<title>ProtoCall Chatting</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<nav>
+			<div id="nav-left">
+				<a href="index.html">Home</a>
+			</div>
+			<div id="nav-middle">
+				<span id="username-view"></span>
+			</div>
+			<div id="nav-right">
+				<input id="room-select-input" type="text" style="width: 250px; border: 0px; outline: 0px;" maxlength=25 placeholder="Enter a room name to connect to or create">
+				<button id="room-select-submit" style="border: 0px; outline: 0px;" onclick="connectToRoom()">Connect</button>
+				<a href="account.html">Account</a>
+			</div>
+		</nav>
+
+		<div id="chat-screen">
+			<aside id="chat-bar-left">
+				<p style="text-align: center; font-size: 20px; font-weight: bold; color: white;">Known Rooms:</p>
+				<ul id="known-room-list"></ul>
+			</aside>
+			<div id="chat-bar-middle">
+  				<pre id="log"></pre>
+				<input id="chat-input" placeholder="Message"/>
+			</div>
+			<aside id="chat-bar-right">
+				<p id="room-name">No Room Connected</p>
+			</aside>
+		</div>
+
+  		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+		<script src="common.js"></script>
+  		<script src="client.js"></script>
+	</body>
+</html>

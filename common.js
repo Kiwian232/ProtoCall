@@ -1,7 +1,8 @@
 const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7164/protocall").withAutomaticReconnect().build();
 
-connection.on("alert_server", (alertMessage) => {
+connection.on("push_serverMessage", (alertMessage) => {
 	alert(alertMessage);
+	shouldCancelMessageClear = true;
 });
 
 function setCookie(key, value) {
@@ -18,9 +19,22 @@ function getCookie(cookie) {
 		return value;
 	}
   }
-  return null;
+  return "";
 }
 
 function colorMsg(message, color = "white") {
 	return `<span style="color: ${color};">${message}</span>`;
+}
+
+async function getUserInfo(userID) {
+	var userInfo = await fetch("https://api.kiwiandoesthings.place/request_userInfo?userID=" + userID);
+	var json = await userInfo.json();
+	if (json == "-1") {
+		return {
+			userUsername: "Unknown",
+			userColor: "808080"
+		};
+	} else {
+		return json;
+	}
 }
