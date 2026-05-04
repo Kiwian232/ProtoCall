@@ -52,7 +52,7 @@ a:active {
 	background-color:rgb(110, 110, 110);
 	text-align: center;
 	margin: 0 auto 0 auto;
-	width: 30vw;
+	width: 40vw;
 	padding: 30px 20px 30px 20px;
 }
 
@@ -63,6 +63,10 @@ a:active {
 
 .small-form #submit {
 	margin-top: 30px;
+}
+
+.small-form ul {
+	text-align: left;
 }
 
 nav {
@@ -95,8 +99,6 @@ nav {
 
 #chat-bar-left {
 	width: 10%;
-	overflow-y: auto;
-	height: 100%;
 }
 
 #chat-bar-right {
@@ -112,10 +114,36 @@ nav {
 
 #chat-bar-middle {
 	flex: 1;
-	overflow-y: auto;
-	height: calc(100vh - 38px);
 	display: flex;
 	flex-direction: column;
+}
+
+.chat-bar {
+	height: calc(100vh - 38px);
+	overflow-y: auto;
+}
+
+#known-room-list {
+	list-style: none;
+	width: 70%;
+	margin: 0 auto 0 auto;
+	padding-left: 0px;
+	white-space: wrap;
+	word-wrap: break-word;
+}
+
+#known-room-list li {
+	margin-bottom: 10px;
+}
+
+#known-room-list.secondary-render {
+	font-size: 20px;
+	width: 30%;
+	margin-bottom: 50px;
+}
+
+#known-room-list.secondary-render li {
+	margin-bottom: 10px;
 }
 
 #log {
@@ -145,20 +173,20 @@ nav {
 	border: none;
 }
 
-#log::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 10px;
 }
 
-#log::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
     background: #000000;
     border-radius: 10px;
 }
 
-#log::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: #ffffff;
     border-radius: 10px;
 }
 
-#log::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: #909090; 
 }

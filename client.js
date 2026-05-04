@@ -22,7 +22,7 @@ var earliestMessageIndex = -1;
 
 var userInfos = {};
 
-var currentRoomID = -1;
+var currentRoomID = 0;
 
 var knownRooms = getCookie("knownrooms").split(".");
 for (var room in knownRooms) {
@@ -53,6 +53,7 @@ async function start() {
         await connection.start();
 		setConnected();
         console.log("Connected to server");
+		connectToRoomID("HomeRoom", 0);
     } catch (error) {
         console.log("Error connecting: " + error);
     }

@@ -21,15 +21,15 @@
 		</nav>
 
 		<div id="chat-screen">
-			<aside id="chat-bar-left">
-				<p style="text-align: center; font-size: 20px; font-weight: bold; color: white;">Known Rooms:</p>
+			<aside id="chat-bar-left" class="chat-bar">
+				<p style="text-align: center; font-size: 20px; font-weight: bold; color: white; position: sticky; top: 0px; background-color: #262626; margin: 0; padding: 10px 0px;">Known Rooms:</p>
 				<ul id="known-room-list"></ul>
 			</aside>
-			<div id="chat-bar-middle">
+			<div id="chat-bar-middle" class="chat-bar">
   				<pre id="log"></pre>
 				<input id="chat-input" placeholder="Message"/>
 			</div>
-			<aside id="chat-bar-right">
+			<aside id="chat-bar-right" class="chat-bar">
 				<p id="room-name">No Room Connected</p>
 			</aside>
 		</div>

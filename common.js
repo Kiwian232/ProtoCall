@@ -38,3 +38,7 @@ async function getUserInfo(userID) {
 		return json;
 	}
 }
+
+if (getCookie("knownrooms") == "") {
+	setCookie("knownrooms", ".HomeRoom,0");
+}
