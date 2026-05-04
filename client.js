@@ -156,6 +156,9 @@ connection.on("push_recieveMessages", async (messages) => {
 		}
 
 		var sendTime = message.messageTimestamp;
+		if (sendTime.length == 0) {
+			sendTime = "Unknown Time";
+		}
 
         if (!isHistory) {
             log(message.content, userInfo.userUsername, "#" + userInfo.userColor, sendTime, false);
@@ -176,7 +179,7 @@ async function send() {
 		return;
 	}
 	if (connected && currentRoomID != -1) {
-		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, parseInt(currentRoomID));
+		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, getDatetime(), parseInt(currentRoomID));
 		if (shouldCancelMessageClear) {
 			shouldCancelMessageClear = false;
 			return;
@@ -202,7 +205,7 @@ function setConnected() {
 }
 
 function systemLog(text, back = false) {
-	log(colorMsg(text, "var(--server-message-color)"), "&lt;System", "var(--server-message-color)", singleDate(), back);
+	log(colorMsg(text, "var(--server-message-color)"), "&lt;System", "var(--server-message-color)", getDatetime(), back);
 }
 
 function log(text, authorUsername, authorColor, timestamp, back = false) {
