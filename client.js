@@ -144,7 +144,7 @@ async function send() {
 		return;
 	}
 	if (connected && currentRoomID != -1) {
-		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, currentRoomID);
+		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, parseInt(currentRoomID));
 		if (shouldCancelMessageClear) {
 			shouldCancelMessageClear = false;
 			return;
