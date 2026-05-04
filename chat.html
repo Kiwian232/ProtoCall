@@ -12,6 +12,7 @@
 			</div>
 			<div id="nav-middle">
 				<span id="username-view"></span>
+				<span id="warning"></span>
 			</div>
 			<div id="nav-right">
 				<input id="room-select-input" type="text" style="width: 250px; border: 0px; outline: 0px;" maxlength=25 placeholder="Enter a room name to connect to or create">
@@ -22,15 +23,22 @@
 
 		<div id="chat-screen">
 			<aside id="chat-bar-left" class="chat-bar">
-				<p style="text-align: center; font-size: 20px; font-weight: bold; color: white; position: sticky; top: 0px; background-color: #262626; margin: 0; padding: 10px 0px;">Known Rooms:</p>
+				<p style="text-align: center; font-size: 20px; font-weight: bold; color: var(--header-color); position: sticky; top: 0px; background-color: var(--secondary-background-color); margin: 0; padding: 10px 0px;">Known Rooms:</p>
 				<ul id="known-room-list"></ul>
 			</aside>
-			<div id="chat-bar-middle" class="chat-bar">
-  				<pre id="log"></pre>
+			<div id="chat-bar-middle">
+				<div id="chat-messages-area">
+  					<div id="chat-container"></div>
+				</div>
 				<input id="chat-input" placeholder="Message"/>
 			</div>
 			<aside id="chat-bar-right" class="chat-bar">
 				<p id="room-name">No Room Connected</p>
+				<div style="padding: 8px; color: var(--header-color);">
+					<h3>Room Info:</h3>
+					Room status: <span id="room-status"></span><br>
+					Connected Users: <ul id="connected-users" style="margin-top: 5px; padding-left: 5px; list-style: none; border-left: 1px white solid;"></ul><br>
+				</div>
 			</aside>
 		</div>
 

@@ -1,3 +1,5 @@
+document.getElementById("warning").innerHTML = "WARNING: This version of ProtoCall is in testing. Beware of bugs and unfinished features";
+
 async function loadClient() {
 	if (getCookie("userid") == "" || getCookie("usersecret") == "") {
 		window.location = "/login.html";
@@ -24,6 +26,9 @@ var userInfos = {};
 
 var currentRoomID = 0;
 
+var totalMessages = 0;
+var canRequestMessages = true;
+
 var knownRooms = getCookie("knownrooms").split(".");
 for (var room in knownRooms) {
 	if (room == 0) {
@@ -40,20 +45,22 @@ document.getElementById("chat-input").addEventListener("keydown", function(event
 	}
 });
 
-document.getElementById("log").addEventListener("wheel", function(event) {
-	if (document.getElementById("log").scrollTop <= 5 && event.deltaY < 0) {
-    	if (earliestMessageIndex > 1) {
-            connection.invoke("push_messageRequest", earliestMessageIndex, 20, currentRoomID);
+document.getElementById("chat-messages-area").addEventListener("wheel", function(event) {
+	if (document.getElementById("chat-messages-area").scrollTop <= 5 && event.deltaY < 0) {
+    	if (earliestMessageIndex > 1 && canRequestMessages) {
+            connection.invoke("push_messageRequest", earliestMessageIndex, 20, parseInt(currentRoomID));
+			canRequestMessages = false;
         }
     }
 });
 
 async function start() {
     try {
+		clearLog();
         await connection.start();
         console.log("Connected to server");
-		connectToRoomID("HomeRoom", 0);
 		setConnected();
+		await connectToRoomID("HomeRoom", 0);
     } catch (error) {
         console.log("Error connecting: " + error);
     }
@@ -73,20 +80,37 @@ async function connectToRoom() {
 	}
 	clearLog();
 	currentRoomID = json.roomID;
-	document.getElementById("room-name").innerHTML = json.roomName;
+	setRoomInfos(json);
 	await connection.invoke("push_messageRequest", -1, 50, currentRoomID);
 	if (getCookie("knownrooms").indexOf(roomName) == -1) {
 		addRoomToList(roomName, currentRoomID);
 	}
-	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "red") + "\"");
+	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
 }
 
 async function connectToRoomID(roomName, roomID) {
-	clearLog();
 	currentRoomID = roomID;
-	document.getElementById("room-name").innerHTML = roomName;
+	var roomInfo = await fetch("https://api.kiwiandoesthings.place/request_roomInfo?roomName=" + roomName);
+	var json = await roomInfo.json();
+	if (json == -1) {
+		alert("Failed to connect directly to room");
+		return;
+	}
+	setRoomInfos(json);
+	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
 	await connection.invoke("push_messageRequest", -1, 50, parseInt(currentRoomID));
-	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "red") + "\"");
+}
+
+async function setRoomInfos(roomJson) {
+	document.getElementById("room-name").innerHTML = roomJson.roomName;
+	document.getElementById("room-status").innerHTML = "Public";
+	document.getElementById("room-status").style.color = "var(--public-color)";
+
+	var listItem = document.createElement("li");
+	var userInfo = await getUserInfo(getCookie("userid"));
+	listItem.innerHTML = userInfo.userUsername;
+	listItem.style.color = "#" + userInfo.userColor;
+	document.getElementById("connected-users").appendChild(listItem);
 }
 
 connection.onclose(error => {
@@ -107,6 +131,8 @@ connection.on("push_recieveRoom", async (roomName, roomID) => {
 });
 
 connection.on("push_recieveMessages", async (messages) => {
+	canRequestMessages = true;
+
 	var fetchPromises = messages.map(message => {
         if (userInfos[message.authorID] === undefined) {
             userInfos[message.authorID] = fetch("https://api.kiwiandoesthings.place/request_userInfo?userID=" + message.authorID).then(result => result.json()).catch(() => ({ userUsername: "Unknown", userColor: "808080" }));
@@ -129,14 +155,16 @@ connection.on("push_recieveMessages", async (messages) => {
 			continue;
 		}
 
+		var sendTime = message.messageTimestamp;
+
         if (!isHistory) {
-            log(message.content, userInfo.userUsername, userInfo.userColor, false);
+            log(message.content, userInfo.userUsername, "#" + userInfo.userColor, sendTime, false);
             latestMessageIndex = Math.max(latestMessageIndex, message.messageIndex);
             if (earliestMessageIndex === -1 || message.messageIndex < earliestMessageIndex) {
                 earliestMessageIndex = message.messageIndex;
             }
         } else {
-            log(message.content, userInfo.userUsername, userInfo.userColor, true);
+            log(message.content, userInfo.userUsername, "#" + userInfo.userColor, sendTime, true);
             earliestMessageIndex = message.messageIndex;
         }
     };
@@ -174,28 +202,39 @@ function setConnected() {
 }
 
 function systemLog(text, back = false) {
-	log(colorMsg(text, "lightblue"), "&lt;System", "add8e6", back);
+	log(colorMsg(text, "var(--server-message-color)"), "&lt;System", "var(--server-message-color)", singleDate(), back);
 }
 
-function log(text, authorUsername, authorColor, back = false) {
-	var log = document.getElementById("log");
-	var messageText = "<span><span style=\"color: #" + authorColor + ";\">" + authorUsername + "></span> " + text + "</span>"
-	if (back) {
-		var prevScrollHeight = log.scrollHeight;
-		var prevScrollTop = log.scrollTop;
+function log(text, authorUsername, authorColor, timestamp, back = false) {
+    var grid = document.getElementById("chat-container");
 
-		log.innerHTML = log.innerHTML + messageText;
+    var timeElement = document.createElement("div");
+    timeElement.className = "timestamp";
+    timeElement.innerText = timestamp;
 
-		var newScrollHeight = log.scrollHeight;
-		log.scrollTop = prevScrollTop + (newScrollHeight - prevScrollHeight);
-	} else {
-		log.innerHTML = messageText + log.innerHTML;
-	}
+    var msgElement = document.createElement("div");
+    msgElement.className = "message";
+    msgElement.innerHTML = "<span style=\"color: " + authorColor + ";\">" + authorUsername + "></span> " + text;
+
+    if (back) {
+        grid.prepend(timeElement);
+        grid.prepend(msgElement);
+    } else {
+        grid.appendChild(msgElement);
+        grid.appendChild(timeElement);
+
+        var area = document.getElementById("chat-messages-area");
+        area.scrollTop = area.scrollHeight;
+    }
+    totalMessages++;
 }
 
 function clearLog() {
-	var log = document.getElementById("log");
+	var log = document.getElementById("chat-container");
 	log.innerHTML = "";
+	totalMessages = 0;
+	earliestMessageIndex = -1;
+	latestMessageIndex = -1;
 }
 
 function addRoomToList(roomName, roomID) {
@@ -210,9 +249,44 @@ function addVisualRoom(roomName, roomID) {
 	link.href = "javascript:void(0)";
 	link.addEventListener("click", function(event) {
         event.preventDefault();
+		clearLog();
         connectToRoomID(roomName, roomID);
     });
 	link.textContent = roomName;
 	listItem.appendChild(link);
 	list.appendChild(listItem);
+}
+
+function getDatetime() {
+	var now = new Date();
+
+	var options = {
+ 	   	hour: '2-digit',
+ 	   	minute: '2-digit',
+ 	   	second: '2-digit',
+	    day: '2-digit',
+	    month: '2-digit',
+	    year: 'numeric',
+	    hour12: false
+	};
+
+	var formatter = new Intl.DateTimeFormat('en-GB', options);
+	var parts = formatter.formatToParts(now);
+
+	var datetime = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+ 	return formattedDate = `${datetime.hour}:${datetime.minute}:${datetime.second} ${datetime.month}/${datetime.day}/${datetime.year}`;
+}
+
+function singleDate() {
+	var now = new Date();
+    
+    var hh = now.getHours();
+    var min = now.getMinutes();
+    var ss = now.getSeconds();
+    var dd = now.getDate();
+    var mm = now.getMonth() + 1;
+    var yyyy = now.getFullYear();
+
+    return `${hh}:${min}:${ss} ${mm}/${dd}/${yyyy}`;
 }
