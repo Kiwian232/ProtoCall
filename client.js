@@ -60,7 +60,10 @@ async function start() {
         await connection.start();
         console.log("Connected to server");
 		setConnected();
-		await connectToRoomID("HomeRoom", 0);
+		var queryString = window.location.search;
+		var urlParams = new URLSearchParams(queryString);
+		var roomName = urlParams.get('connectToRoom') || 'HomeRoom';
+		await connectToRoomName(roomName);
     } catch (error) {
         console.log("Error connecting: " + error);
     }
@@ -70,9 +73,8 @@ start();
 
 async function connectToRoom() {
 	var roomName = document.getElementById("room-select-input").value;
-	var roomInfo = await fetch("https://api.kiwiandoesthings.place/request_roomInfo?roomName=" + roomName);
-	var json = await roomInfo.json();
-	if (json == -1) {
+	var json = await getRoomInfo(roomName);
+	if (json == "-1") {
 		if (confirm("That room does not exist! Create it?")) {
 			connection.invoke("push_createRoom", roomName, getCookie("userid"), getCookie("usersecret"));
 		}
@@ -88,14 +90,14 @@ async function connectToRoom() {
 	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
 }
 
-async function connectToRoomID(roomName, roomID) {
-	currentRoomID = roomID;
+async function connectToRoomName(roomName) {
 	var roomInfo = await fetch("https://api.kiwiandoesthings.place/request_roomInfo?roomName=" + roomName);
 	var json = await roomInfo.json();
 	if (json == -1) {
 		alert("Failed to connect directly to room");
 		return;
 	}
+	currentRoomID = json.roomID;
 	setRoomInfos(json);
 	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
 	await connection.invoke("push_messageRequest", -1, 50, parseInt(currentRoomID));
@@ -175,11 +177,15 @@ connection.on("push_recieveMessages", async (messages) => {
 
 async function send() {
 	var input = document.getElementById("chat-input");
-	if (input.value == "") {
+	var sanitizedText = sanitizeText(input.value);
+	if (sanitizedText != input.value) {
+		systemLog("You cannot send messages with HTML tags!");
+	}
+	if (sanitizedText == "") {
 		return;
 	}
 	if (connected && currentRoomID != -1) {
-		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), input.value, getDatetime(), parseInt(currentRoomID));
+		await connection.invoke("push_sendMessage", getCookie("userid"), getCookie("usersecret"), sanitizedText, getDatetime(), parseInt(currentRoomID));
 		if (shouldCancelMessageClear) {
 			shouldCancelMessageClear = false;
 			return;
@@ -209,6 +215,8 @@ function systemLog(text, back = false) {
 }
 
 function log(text, authorUsername, authorColor, timestamp, back = false) {
+	var sanitizedText = sanitizeText(text);
+
     var grid = document.getElementById("chat-container");
 
     var timeElement = document.createElement("div");
@@ -217,7 +225,7 @@ function log(text, authorUsername, authorColor, timestamp, back = false) {
 
     var msgElement = document.createElement("div");
     msgElement.className = "message";
-    msgElement.innerHTML = "<span style=\"color: " + authorColor + ";\">" + authorUsername + "></span> " + text;
+    msgElement.innerHTML = "<span style=\"color: " + authorColor + ";\">" + authorUsername + "></span> " + sanitizedText;
 
     if (back) {
         grid.prepend(timeElement);
@@ -238,6 +246,12 @@ function clearLog() {
 	totalMessages = 0;
 	earliestMessageIndex = -1;
 	latestMessageIndex = -1;
+
+	document.getElementById("room-name").innerHTML = "No Room Connected";
+	document.getElementById("room-status").innerHTML = "Unknown";
+	document.getElementById("room-status").style.color = "var(--unknown-color)";
+
+	document.getElementById("connected-users").innerHTML = "";
 }
 
 function addRoomToList(roomName, roomID) {
@@ -253,7 +267,7 @@ function addVisualRoom(roomName, roomID) {
 	link.addEventListener("click", function(event) {
         event.preventDefault();
 		clearLog();
-        connectToRoomID(roomName, roomID);
+        connectToRoomName(roomName);
     });
 	link.textContent = roomName;
 	listItem.appendChild(link);
@@ -262,7 +276,6 @@ function addVisualRoom(roomName, roomID) {
 
 function getDatetime() {
 	var now = new Date();
-
 	var options = {
  	   	hour: '2-digit',
  	   	minute: '2-digit',
@@ -275,21 +288,14 @@ function getDatetime() {
 
 	var formatter = new Intl.DateTimeFormat('en-GB', options);
 	var parts = formatter.formatToParts(now);
-
 	var datetime = Object.fromEntries(parts.map(p => [p.type, p.value]));
 
  	return formattedDate = `${datetime.hour}:${datetime.minute}:${datetime.second} ${datetime.month}/${datetime.day}/${datetime.year}`;
 }
 
-function singleDate() {
-	var now = new Date();
-    
-    var hh = now.getHours();
-    var min = now.getMinutes();
-    var ss = now.getSeconds();
-    var dd = now.getDate();
-    var mm = now.getMonth() + 1;
-    var yyyy = now.getFullYear();
-
-    return `${hh}:${min}:${ss} ${mm}/${dd}/${yyyy}`;
+function sanitizeText(text) {
+	return DOMPurify.sanitize(text, {
+    	ALLOWED_TAGS: [],
+    	ALLOWED_ATTR: []
+	}).trim();
 }

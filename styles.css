@@ -12,12 +12,13 @@ html {
 	--secondary-background-color: #262626;
 	--public-color: rgb(0, 255, 0);
 	--private-color: red;
+	--unknown-color: #808080;
 
 	--header-color: white;
 }
 
 html, body {
-	background-color: #262626;
+	background-color: var(--secondary-background-color);
 	height: 100%;
 	margin: 0;
 	padding: 0;
@@ -59,6 +60,17 @@ a:hover {
 
 a:active {
   	color: rgb(138, 255, 255);
+}
+
+input, button {
+	background-color: var(--secondary-background-color);
+	border: 3px var(--background-color-selected) solid;
+	outline: 0px;
+	color: var(--message-color);
+}
+
+button:active {
+	background-color: var(--background-color-selected);
 }
 
 #page-heading {
@@ -271,4 +283,32 @@ p {
 
 #warning {
 	color: red;
+}
+
+#home-container {
+	display: flex;
+	min-height: calc(100vh - 39px);
+}
+
+.home-column {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	color: var(--header-color);
+}
+
+#room-search-results {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--background-color-selected);
+	flex-grow: 1;
+	align-items: center;
+	max-height: 80%;
+	width: 70%;
+	margin-top: auto;
+	margin-bottom: auto;
+	justify-content: center; 
+	margin-bottom: auto;
+	overflow-y: auto;
 }

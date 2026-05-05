@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
+		<title>ProtoCall Chatting - Home</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<nav>
+			<div id="nav-left">
+				<a href="home.html">Home</a>
+			</div>
+			
+			<div id="nav-right">
+				<a href="chat.html">Chat</a>
+				<a href="account.html">Account</a>
+			</div>
+		</nav>
+
+		<div id="home-container">
+			<div class="home-column">
+				<h1>Users Hub</h1>
+				<input id="user-search-input" placeholder="Cool_User12">
+				<span id="user-search-result"></span>
+			</div>
+			<div class="home-column" style="border: 3px var(--background-color) solid; border-top: 0px; border-bottom: 0px;">
+				<h1>Known Rooms</h1>
+				<input id="known-room-select-input" placeholder="">
+				<div id="room-search-results">
+					<h3></h3>
+				</div>
+			</div>
+			<div class="home-column">
+				<h1>New Rooms</h1>
+				<input id="new-room-select-input" placeholder=""><br>
+				<button id="room-create-button">Create Room</button><br>
+				<button id="room-search-button">Search for Room</button><br>
+				<span id="new-room-search-results"></span>
+			</div>
+		</div>
+
+  		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+		<script src="common.js"></script>
+		<script src="home.js"></script>
+	</body>
+</html>
