@@ -303,9 +303,40 @@ p {
 	flex-direction: column;
 	background-color: var(--background-color-selected);
 	flex: 1;
-	align-items: center;
+	align-items: left;
 	width: 70%;
 	margin: 40px 0px 40px 0px;
-	justify-content: center; 
+	justify-content: top; 
 	overflow-y: auto;
+	padding: 10px;
+}
+
+.search-results-list {
+	list-style: none;
+	padding-left: 0px;
+	margin: 0px;
+}
+
+.search-result-item {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	background-color: var(--secondary-background-color);
+}
+
+img {
+    image-rendering: -webkit-optimize-contrast;
+	image-rendering: pixelated; 
+    image-rendering: crisp-edges;
+}
+
+.result-actions {
+	display: flex;
+	flex-direction: row;
+	gap: 0px 5px;
+}
+
+.result-actions img {
+	flex: 1;
 }

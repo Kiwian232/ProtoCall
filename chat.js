@@ -30,15 +30,6 @@ var currentRoomName = "";
 var totalMessages = 0;
 var canRequestMessages = true;
 
-var knownRooms = getCookie("knownrooms").split(".");
-for (var room in knownRooms) {
-	if (room == 0) {
-		continue;
-	}
-	var parts = knownRooms[room].split(",");
-	addVisualRoom(parts[0], parts[1]);
-}
-
 document.getElementById("chat-input").addEventListener("keydown", function(event) {
 	if (event.key === "Enter") {
 		send();
@@ -263,26 +254,6 @@ function clearLog() {
 	//document.getElementById("connected-users").innerHTML = "";
 }
 
-function addRoomToList(roomName, roomID) {
-	setCookie("knownrooms", getCookie("knownrooms") + "." + roomName + "," + roomID);
-	addVisualRoom(roomName, roomID);
-}
-
-function addVisualRoom(roomName, roomID) {
-	var list = document.getElementById("known-room-list");
-	var listItem = document.createElement("li");
-	var link = document.createElement("a");
-	link.href = "javascript:void(0)";
-	link.addEventListener("click", function(event) {
-        event.preventDefault();
-		clearLog();
-     	connectToRoomID(roomID);
-    });
-	link.textContent = roomName;
-	listItem.appendChild(link);
-	list.appendChild(listItem);
-}
-
 function getDatetime() {
 	var now = new Date();
 	var options = {
@@ -304,8 +275,8 @@ function getDatetime() {
 
 function sanitizeText(text) {
 	return DOMPurify.sanitize(text, {
-    	ALLOWED_TAGS: ["color", "strong", "i"],
-    	ALLOWED_ATTR: []
+    	ALLOWED_TAGS: ["color", "b", "i", "u"],
+    	ALLOWED_ATTR: ["color"]
 	}).trim();
 }
 

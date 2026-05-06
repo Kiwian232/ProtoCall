@@ -26,22 +26,22 @@
 			<div class="home-column" style="border: 3px var(--background-color) solid; border-top: 0px; border-bottom: 0px;">
 				<h1>Known Rooms</h1>
 				<input id="known-room-select-input" placeholder="">
-				<div id="room-search-results" class="search-results">
-					<h3></h3>
+				<div id="known-room-search-results" class="search-results">
+					<ul class="search-results-list"></ul>
 				</div>
 			</div>
 			<div class="home-column">
 				<h1>New Rooms</h1>
 				<input id="new-room-select-input" placeholder=""><br>
 				<button id="room-create-button">Create Room</button><br>
-				<button id="room-search-button">Search for Room</button><br>
 				<div id="new-room-search-results" class="search-results">
-					<h3></h3>
+					<ul class="search-results-list"></ul>
 				</div>
 			</div>
 		</div>
 
   		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
 		<script src="common.js"></script>
 		<script src="home.js"></script>
 	</body>
