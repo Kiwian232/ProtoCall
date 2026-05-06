@@ -27,16 +27,7 @@ password.addEventListener('input', () => {
     }
 });
 
-async function start() {
-    try {
-        await connection.start();
-        console.log("Connected to server");
-    } catch (error) {
-        console.log("Error connecting: " + error);
-    }
-}
-
-start();
+easyStart();
 
 async function register() {
 	var usernameValue = username.value;

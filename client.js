@@ -24,7 +24,8 @@ var earliestMessageIndex = -1;
 
 var userInfos = {};
 
-var currentRoomID = 0;
+var currentRoomID = -1;
+var currentRoomName = "";
 
 var totalMessages = 0;
 var canRequestMessages = true;
@@ -48,7 +49,7 @@ document.getElementById("chat-input").addEventListener("keydown", function(event
 document.getElementById("chat-messages-area").addEventListener("wheel", function(event) {
 	if (document.getElementById("chat-messages-area").scrollTop <= 5 && event.deltaY < 0) {
     	if (earliestMessageIndex > 1 && canRequestMessages) {
-            connection.invoke("push_messageRequest", earliestMessageIndex, 20, parseInt(currentRoomID));
+            requestMessages(earliestMessageIndex, 20);
 			canRequestMessages = false;
         }
     }
@@ -63,7 +64,8 @@ async function start() {
 		var queryString = window.location.search;
 		var urlParams = new URLSearchParams(queryString);
 		var roomName = urlParams.get('connectToRoom') || 'HomeRoom';
-		await connectToRoomName(roomName);
+		var roomID = await getRoomID(roomName);
+		await connectToRoomID(roomID);
     } catch (error) {
         console.log("Error connecting: " + error);
     }
@@ -73,7 +75,11 @@ start();
 
 async function connectToRoom() {
 	var roomName = document.getElementById("room-select-input").value;
-	var json = await getRoomInfo(roomName);
+	var roomID = await getRoomID(roomName);
+	if (roomID == "-1") {
+		roomID = 0;
+	}
+	var json = await getRoomInfo(roomID);
 	if (json == "-1") {
 		if (confirm("That room does not exist! Create it?")) {
 			connection.invoke("push_createRoom", roomName, getCookie("userid"), getCookie("usersecret"));
@@ -83,24 +89,24 @@ async function connectToRoom() {
 	clearLog();
 	currentRoomID = json.roomID;
 	setRoomInfos(json);
-	await connection.invoke("push_messageRequest", -1, 50, currentRoomID);
+	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
+	await requestMessages(-1, 50);
 	if (getCookie("knownrooms").indexOf(roomName) == -1) {
 		addRoomToList(roomName, currentRoomID);
 	}
-	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
 }
 
-async function connectToRoomName(roomName) {
-	var roomInfo = await fetch("https://api.kiwiandoesthings.place/request_roomInfo?roomName=" + roomName);
-	var json = await roomInfo.json();
-	if (json == -1) {
+async function connectToRoomID(roomID) {
+	var roomInfo = await getRoomInfo(roomID);
+	if (roomInfo == "-1") {
 		alert("Failed to connect directly to room");
+		connectToRoomID(0);
 		return;
 	}
-	currentRoomID = json.roomID;
-	setRoomInfos(json);
-	systemLog("You have successfully connected to room \"" + colorMsg(roomName, "var(--server-alert-color)") + "\"");
-	await connection.invoke("push_messageRequest", -1, 50, parseInt(currentRoomID));
+	currentRoomID = roomID;
+	setRoomInfos(roomInfo);
+	systemLog("You have successfully connected to room \"" + colorMsg(roomInfo.roomName, "var(--server-alert-color)") + "\"");
+	await requestMessages(-1, 50);
 }
 
 async function setRoomInfos(roomJson) {
@@ -112,7 +118,7 @@ async function setRoomInfos(roomJson) {
 	var userInfo = await getUserInfo(getCookie("userid"));
 	listItem.innerHTML = userInfo.userUsername;
 	listItem.style.color = "#" + userInfo.userColor;
-	document.getElementById("connected-users").appendChild(listItem);
+	//document.getElementById("connected-users").appendChild(listItem);
 }
 
 connection.onclose(error => {
@@ -127,7 +133,7 @@ connection.onreconnected(connectionID => {
 connection.on("push_recieveRoom", async (roomName, roomID) => {
 	clearLog();
 	currentRoomID = roomID;
-	await connection.invoke("push_messageRequest", -1, 50, currentRoomID);
+	await requestMessages(-1, 50);
 	document.getElementById("room-name").innerHTML = roomName;
 	addRoomToList(roomName, currentRoomID);
 });
@@ -179,7 +185,7 @@ async function send() {
 	var input = document.getElementById("chat-input");
 	var sanitizedText = sanitizeText(input.value);
 	if (sanitizedText != input.value) {
-		systemLog("You cannot send messages with HTML tags!");
+		systemLog("You cannot send messages with disallowed HTML tags!");
 	}
 	if (sanitizedText == "") {
 		return;
@@ -215,7 +221,10 @@ function systemLog(text, back = false) {
 }
 
 function log(text, authorUsername, authorColor, timestamp, back = false) {
-	var sanitizedText = sanitizeText(text);
+	var sanitizedText = text;
+	if (authorUsername != "&lt;System") {
+		sanitizedText = sanitizeText(text);
+	}
 
     var grid = document.getElementById("chat-container");
 
@@ -251,7 +260,7 @@ function clearLog() {
 	document.getElementById("room-status").innerHTML = "Unknown";
 	document.getElementById("room-status").style.color = "var(--unknown-color)";
 
-	document.getElementById("connected-users").innerHTML = "";
+	//document.getElementById("connected-users").innerHTML = "";
 }
 
 function addRoomToList(roomName, roomID) {
@@ -267,7 +276,7 @@ function addVisualRoom(roomName, roomID) {
 	link.addEventListener("click", function(event) {
         event.preventDefault();
 		clearLog();
-        connectToRoomName(roomName);
+     	connectToRoomID(roomID);
     });
 	link.textContent = roomName;
 	listItem.appendChild(link);
@@ -295,7 +304,19 @@ function getDatetime() {
 
 function sanitizeText(text) {
 	return DOMPurify.sanitize(text, {
-    	ALLOWED_TAGS: [],
+    	ALLOWED_TAGS: ["color", "strong", "i"],
     	ALLOWED_ATTR: []
 	}).trim();
+}
+
+function editRoom() {
+	if (currentRoomID == -1) {
+		systemLog("You are not connected to a room!");
+		return;
+	}
+	window.location.replace("/room_settings.html?roomID=" + currentRoomID);
+}
+
+async function requestMessages(start, end) {
+	await connection.invoke("push_messageRequest", start, end, getCookie("userid"), getCookie("usersecret"), parseInt(currentRoomID));
 }

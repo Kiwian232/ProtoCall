@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
+		<title>ProtoCall Chatting - Edit Room Settings</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<nav>
+			<div id="nav-left">
+				<a href="home.html">Home</a>
+			</div>
+			
+			<div id="nav-right">
+				<a href="chat.html">Chat</a>
+				<a href="account.html">Account</a>
+			</div>
+		</nav>
+
+		<main id="page-heading">
+			<h1>Edit Room Settings</h1>
+
+			<div class="small-form">
+					<button id="room-privacy-toggle-button" onclick="toggleRoomPrivacy()"></button>
+			</div>
+		</main>
+
+  		<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+		<script src="common.js"></script>
+		<script src="room_settings.js"></script>
+	</body>
+</html>

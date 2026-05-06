@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<link rel="icon" type="image/ico" sizes="16x16" href="resources/pc_logo.ico">
-		<title>ProtoCall Chatting</title>
+		<title>ProtoCall Chatting - Chat</title>
 		<link rel="stylesheet" href="styles.css">
 	</head>
 	<body>
@@ -15,8 +15,7 @@
 				<span id="warning"></span>
 			</div>
 			<div id="nav-right">
-				<input id="room-select-input" type="text" style="width: 250px; border: 0px; outline: 0px;" maxlength=25 placeholder="Enter a room name to connect to or create">
-				<button id="room-select-submit" style="border: 0px; outline: 0px;" onclick="connectToRoom()">Connect</button>
+				<button onclick="editRoom()">Edit Room Settings</button>
 				<a href="account.html">Account</a>
 			</div>
 		</nav>
@@ -37,7 +36,7 @@
 				<div style="padding: 8px; color: var(--header-color);">
 					<h3>Room Info:</h3>
 					Room status: <span id="room-status"></span><br>
-					Connected Users: <ul id="connected-users" style="margin-top: 5px; padding-left: 5px; list-style: none; border-left: 1px white solid;"></ul><br>
+					<!--Connected Users: <ul id="connected-users" style="margin-top: 5px; padding-left: 5px; list-style: none; border-left: 1px white solid;"></ul><br>-->
 				</div>
 			</aside>
 		</div>

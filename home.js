@@ -13,16 +13,7 @@ async function loadClient() {
 
 loadClient();
 
-async function start() {
-    try {
-        await connection.start();
-        console.log("Connected to server");
-    } catch (error) {
-        console.log("Error connecting: " + error);
-    }
-}
-
-start();
+easyStart();
 
 var roomSelectInput = document.getElementById("new-room-select-input");
 var createButton = document.getElementById("room-create-button");
